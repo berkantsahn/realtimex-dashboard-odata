@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("RealtimeX.Dashboard.API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b4a0b67e2b6dbb214943e4eda4545ca25f683a2e")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+adaab8da3725bece8281d55bef09d1078d29744a")]
 [assembly: System.Reflection.AssemblyProductAttribute("RealtimeX.Dashboard.API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("RealtimeX.Dashboard.API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

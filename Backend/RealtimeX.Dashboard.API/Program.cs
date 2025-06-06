@@ -72,8 +72,8 @@ builder.Services.AddCors(options =>
 });
 
 // Configure JWT Authentication
-var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>()
-    ?? throw new InvalidOperationException("JwtSettings section is missing in configuration");
+var jwtSettings = builder.Configuration.GetSection("Jwt").Get<JwtSettings>()
+    ?? throw new InvalidOperationException("Jwt section is missing in configuration");
 
 var key = Encoding.ASCII.GetBytes(jwtSettings.Secret);
 
