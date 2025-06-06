@@ -4,56 +4,76 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using RealtimeX.Dashboard.Core.Interfaces;
+using RealtimeX.Dashboard.Infrastructure.Repositories;
 
 namespace RealtimeX.Dashboard.Infrastructure.Data
 {
     public class MongoUnitOfWork : IUnitOfWork
     {
         private readonly IMongoDatabase _database;
-        private readonly MongoDbSettings _settings;
         private readonly Dictionary<Type, object> _repositories;
+        private IClientSessionHandle _session;
         private bool _disposed;
 
-        public MongoUnitOfWork(IOptions<MongoDbSettings> settings)
+        public MongoUnitOfWork(IMongoDatabase database)
         {
-            _settings = settings.Value;
-            var client = new MongoClient(_settings.ConnectionString);
-            _database = client.GetDatabase(_settings.DatabaseName);
+            _database = database;
             _repositories = new Dictionary<Type, object>();
         }
 
-        public IRepository<T> Repository<T>() where T : class
+        public IRepository<T> GetRepository<T>() where T : class
         {
-            var type = typeof(T);
-
-            if (!_repositories.ContainsKey(type))
+            if (_repositories.ContainsKey(typeof(T)))
             {
-                var collectionName = GetCollectionName<T>();
-                var repositoryType = typeof(MongoRepository<>).MakeGenericType(type);
-                var repository = Activator.CreateInstance(repositoryType, _database, collectionName);
-                _repositories.Add(type, repository);
+                return (IRepository<T>)_repositories[typeof(T)];
             }
 
-            return (IRepository<T>)_repositories[type];
+            var repository = new MongoRepository<T>(_database);
+            _repositories.Add(typeof(T), repository);
+            return repository;
         }
 
-        public async Task<int> CompleteAsync()
+        public async Task<bool> SaveChangesAsync()
         {
-            // MongoDB'de transaction yönetimi için gerekirse burada implementasyon yapılabilir
-            return await Task.FromResult(1);
-        }
-
-        private string GetCollectionName<T>()
-        {
-            var type = typeof(T).Name;
-            return type switch
+            if (_session != null && _session.IsInTransaction)
             {
-                "RealTimeData" => _settings.RealTimeDataCollectionName,
-                "Announcement" => _settings.AnnouncementsCollectionName,
-                "ChatMessage" => _settings.ChatMessagesCollectionName,
-                "User" => _settings.UsersCollectionName,
-                _ => throw new ArgumentException($"Unknown entity type: {type}")
-            };
+                await _session.CommitTransactionAsync();
+                return true;
+            }
+            return true;
+        }
+
+        public async Task BeginTransactionAsync()
+        {
+            if (_session == null)
+            {
+                _session = await _database.Client.StartSessionAsync();
+            }
+            _session.StartTransaction();
+        }
+
+        public async Task CommitTransactionAsync()
+        {
+            try
+            {
+                if (_session != null && _session.IsInTransaction)
+                {
+                    await _session.CommitTransactionAsync();
+                }
+            }
+            catch
+            {
+                await RollbackTransactionAsync();
+                throw;
+            }
+        }
+
+        public async Task RollbackTransactionAsync()
+        {
+            if (_session != null && _session.IsInTransaction)
+            {
+                await _session.AbortTransactionAsync();
+            }
         }
 
         public void Dispose()
@@ -64,11 +84,14 @@ namespace RealtimeX.Dashboard.Infrastructure.Data
 
         protected virtual void Dispose(bool disposing)
         {
-            if (!_disposed && disposing)
+            if (!_disposed)
             {
-                _repositories.Clear();
+                if (disposing)
+                {
+                    _session?.Dispose();
+                }
+                _disposed = true;
             }
-            _disposed = true;
         }
     }
 } 

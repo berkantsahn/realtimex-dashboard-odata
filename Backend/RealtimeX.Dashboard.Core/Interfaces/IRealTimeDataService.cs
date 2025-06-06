@@ -11,5 +11,6 @@ namespace RealtimeX.Dashboard.Core.Interfaces
         Task<RealTimeData> AddDataAsync(RealTimeData data);
         Task<IEnumerable<RealTimeData>> GetDataByDateRangeAsync(string deviceId, DateTime startDate, DateTime endDate);
         Task ProcessDataAsync(int dataId);
+        Task SendDataAsync(RealTimeData data);
     }
 } 

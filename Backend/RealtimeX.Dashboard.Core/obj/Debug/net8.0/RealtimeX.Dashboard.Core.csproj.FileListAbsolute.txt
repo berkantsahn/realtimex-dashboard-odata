@@ -1,0 +1,13 @@
+C:\Users\Berkant\Documents\Github\realtimex-dashboard-odata\Backend\RealtimeX.Dashboard.Core\bin\Debug\net8.0\RealtimeX.Dashboard.Core.deps.json
+C:\Users\Berkant\Documents\Github\realtimex-dashboard-odata\Backend\RealtimeX.Dashboard.Core\bin\Debug\net8.0\RealtimeX.Dashboard.Core.dll
+C:\Users\Berkant\Documents\Github\realtimex-dashboard-odata\Backend\RealtimeX.Dashboard.Core\bin\Debug\net8.0\RealtimeX.Dashboard.Core.pdb
+C:\Users\Berkant\Documents\Github\realtimex-dashboard-odata\Backend\RealtimeX.Dashboard.Core\obj\Debug\net8.0\RealtimeX.Dashboard.Core.csproj.AssemblyReference.cache
+C:\Users\Berkant\Documents\Github\realtimex-dashboard-odata\Backend\RealtimeX.Dashboard.Core\obj\Debug\net8.0\RealtimeX.Dashboard.Core.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Berkant\Documents\Github\realtimex-dashboard-odata\Backend\RealtimeX.Dashboard.Core\obj\Debug\net8.0\RealtimeX.Dashboard.Core.AssemblyInfoInputs.cache
+C:\Users\Berkant\Documents\Github\realtimex-dashboard-odata\Backend\RealtimeX.Dashboard.Core\obj\Debug\net8.0\RealtimeX.Dashboard.Core.AssemblyInfo.cs
+C:\Users\Berkant\Documents\Github\realtimex-dashboard-odata\Backend\RealtimeX.Dashboard.Core\obj\Debug\net8.0\RealtimeX.Dashboard.Core.csproj.CoreCompileInputs.cache
+C:\Users\Berkant\Documents\Github\realtimex-dashboard-odata\Backend\RealtimeX.Dashboard.Core\obj\Debug\net8.0\RealtimeX.Dashboard.Core.sourcelink.json
+C:\Users\Berkant\Documents\Github\realtimex-dashboard-odata\Backend\RealtimeX.Dashboard.Core\obj\Debug\net8.0\RealtimeX.Dashboard.Core.dll
+C:\Users\Berkant\Documents\Github\realtimex-dashboard-odata\Backend\RealtimeX.Dashboard.Core\obj\Debug\net8.0\refint\RealtimeX.Dashboard.Core.dll
+C:\Users\Berkant\Documents\Github\realtimex-dashboard-odata\Backend\RealtimeX.Dashboard.Core\obj\Debug\net8.0\RealtimeX.Dashboard.Core.pdb
+C:\Users\Berkant\Documents\Github\realtimex-dashboard-odata\Backend\RealtimeX.Dashboard.Core\obj\Debug\net8.0\ref\RealtimeX.Dashboard.Core.dll

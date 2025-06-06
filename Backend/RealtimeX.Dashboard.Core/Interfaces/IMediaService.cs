@@ -1,5 +1,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using RealtimeX.Dashboard.Core.Enums;
+using System;
 
 namespace RealtimeX.Dashboard.Core.Interfaces
 {
@@ -19,14 +21,14 @@ namespace RealtimeX.Dashboard.Core.Interfaces
         public long Size { get; set; }
         public string Name { get; set; }
         public string MimeType { get; set; }
-        public int? Duration { get; set; }
+        public TimeSpan? Duration { get; set; }
     }
 
     public class MediaMetadata
     {
         public long Size { get; set; }
         public string MimeType { get; set; }
-        public int? Duration { get; set; }
+        public TimeSpan? Duration { get; set; }
         public int? Width { get; set; }
         public int? Height { get; set; }
     }

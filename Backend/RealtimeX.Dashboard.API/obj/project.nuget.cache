@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "CKU+hjlxs2E=",
+  "dgSpecHash": "Mzg7Fpj4xmA=",
   "success": true,
   "projectFilePath": "C:\\Users\\Berkant\\Documents\\Github\\realtimex-dashboard-odata\\Backend\\RealtimeX.Dashboard.API\\RealtimeX.Dashboard.API.csproj",
   "expectedPackageFiles": [
@@ -26,7 +26,7 @@
     "C:\\Users\\Berkant\\.nuget\\packages\\microsoft.odata.core\\7.20.0\\microsoft.odata.core.7.20.0.nupkg.sha512",
     "C:\\Users\\Berkant\\.nuget\\packages\\microsoft.odata.edm\\7.20.0\\microsoft.odata.edm.7.20.0.nupkg.sha512",
     "C:\\Users\\Berkant\\.nuget\\packages\\microsoft.odata.modelbuilder\\1.0.9\\microsoft.odata.modelbuilder.1.0.9.nupkg.sha512",
-    "C:\\Users\\Berkant\\.nuget\\packages\\microsoft.openapi\\1.4.3\\microsoft.openapi.1.4.3.nupkg.sha512",
+    "C:\\Users\\Berkant\\.nuget\\packages\\microsoft.openapi\\1.6.14\\microsoft.openapi.1.6.14.nupkg.sha512",
     "C:\\Users\\Berkant\\.nuget\\packages\\microsoft.spatial\\7.20.0\\microsoft.spatial.7.20.0.nupkg.sha512",
     "C:\\Users\\Berkant\\.nuget\\packages\\mongodb.bson\\2.24.0\\mongodb.bson.2.24.0.nupkg.sha512",
     "C:\\Users\\Berkant\\.nuget\\packages\\mongodb.driver\\2.24.0\\mongodb.driver.2.24.0.nupkg.sha512",
@@ -37,7 +37,6 @@
     "C:\\Users\\Berkant\\.nuget\\packages\\sixlabors.imagesharp\\3.1.3\\sixlabors.imagesharp.3.1.3.nupkg.sha512",
     "C:\\Users\\Berkant\\.nuget\\packages\\snappier\\1.0.0\\snappier.1.0.0.nupkg.sha512",
     "C:\\Users\\Berkant\\.nuget\\packages\\swashbuckle.aspnetcore\\6.5.0\\swashbuckle.aspnetcore.6.5.0.nupkg.sha512",
-    "C:\\Users\\Berkant\\.nuget\\packages\\swashbuckle.aspnetcore.annotations\\6.5.0\\swashbuckle.aspnetcore.annotations.6.5.0.nupkg.sha512",
     "C:\\Users\\Berkant\\.nuget\\packages\\swashbuckle.aspnetcore.swagger\\6.5.0\\swashbuckle.aspnetcore.swagger.6.5.0.nupkg.sha512",
     "C:\\Users\\Berkant\\.nuget\\packages\\swashbuckle.aspnetcore.swaggergen\\6.5.0\\swashbuckle.aspnetcore.swaggergen.6.5.0.nupkg.sha512",
     "C:\\Users\\Berkant\\.nuget\\packages\\swashbuckle.aspnetcore.swaggerui\\6.5.0\\swashbuckle.aspnetcore.swaggerui.6.5.0.nupkg.sha512",

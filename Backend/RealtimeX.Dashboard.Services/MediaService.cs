@@ -7,6 +7,8 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 using Xabe.FFmpeg;
 using RealtimeX.Dashboard.Core.Interfaces;
+using RealtimeX.Dashboard.Core.Enums;
+using System.Linq;
 
 namespace RealtimeX.Dashboard.Services
 {
@@ -99,12 +101,14 @@ namespace RealtimeX.Dashboard.Services
 
                 case MediaType.Audio:
                     // Ses dosyaları için varsayılan bir ikon kullan
-                    File.Copy("wwwroot/images/audio-icon.png", thumbnailPath);
+                    if (File.Exists("wwwroot/images/audio-icon.png"))
+                        File.Copy("wwwroot/images/audio-icon.png", thumbnailPath);
                     break;
 
                 case MediaType.Document:
                     // Dökümanlar için varsayılan bir ikon kullan
-                    File.Copy("wwwroot/images/document-icon.png", thumbnailPath);
+                    if (File.Exists("wwwroot/images/document-icon.png"))
+                        File.Copy("wwwroot/images/document-icon.png", thumbnailPath);
                     break;
             }
 
@@ -125,7 +129,8 @@ namespace RealtimeX.Dashboard.Services
             {
                 case MediaType.Video:
                 case MediaType.Audio:
-                    using (var tempFile = Path.GetTempFileName())
+                    var tempFile = Path.GetTempFileName();
+                    try
                     {
                         using (var stream = new FileStream(tempFile, FileMode.Create))
                         {
@@ -133,7 +138,7 @@ namespace RealtimeX.Dashboard.Services
                         }
 
                         var mediaInfo = await FFmpeg.GetMediaInfo(tempFile);
-                        metadata.Duration = (int)mediaInfo.Duration.TotalSeconds;
+                        metadata.Duration = mediaInfo.Duration;
 
                         if (mediaType == MediaType.Video)
                         {
@@ -141,8 +146,11 @@ namespace RealtimeX.Dashboard.Services
                             metadata.Width = videoStream.Width;
                             metadata.Height = videoStream.Height;
                         }
-
-                        File.Delete(tempFile);
+                    }
+                    finally
+                    {
+                        if (File.Exists(tempFile))
+                            File.Delete(tempFile);
                     }
                     break;
 
@@ -176,7 +184,8 @@ namespace RealtimeX.Dashboard.Services
 
         private async Task GenerateVideoThumbnailAsync(IFormFile file, string outputPath)
         {
-            using (var tempFile = Path.GetTempFileName())
+            var tempFile = Path.GetTempFileName();
+            try
             {
                 using (var stream = new FileStream(tempFile, FileMode.Create))
                 {
@@ -187,26 +196,25 @@ namespace RealtimeX.Dashboard.Services
                 var duration = mediaInfo.Duration.TotalSeconds;
                 
                 // Video'nun ortasından bir kare al
-                var snapshot = await FFmpeg.Conversions.New()
-                    .AddParameter($"-ss {duration / 2}")
-                    .AddParameter("-frames:v 1")
-                    .SetInputFile(tempFile)
-                    .SetOutputFile(outputPath)
-                    .Start();
-
-                File.Delete(tempFile);
+                var conversion = await FFmpeg.Conversions.FromSnippet.Snapshot(tempFile, outputPath, TimeSpan.FromSeconds(duration / 2));
+                await conversion.Start();
+            }
+            finally
+            {
+                if (File.Exists(tempFile))
+                    File.Delete(tempFile);
             }
         }
 
-        private MediaType GetMediaType(string contentType)
+        private MediaType GetMediaType(string mimeType)
         {
-            if (contentType.StartsWith("image/"))
+            if (mimeType.StartsWith("image/"))
                 return MediaType.Image;
-            if (contentType.StartsWith("video/"))
+            if (mimeType.StartsWith("video/"))
                 return MediaType.Video;
-            if (contentType.StartsWith("audio/"))
+            if (mimeType.StartsWith("audio/"))
                 return MediaType.Audio;
             return MediaType.Document;
         }
     }
-} 
+}

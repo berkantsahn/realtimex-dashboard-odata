@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using RealtimeX.Dashboard.Core.Entities;
 using RealtimeX.Dashboard.Core.Interfaces;
+using System.Linq;
 
 namespace RealtimeX.Dashboard.Services
 {
@@ -21,48 +22,68 @@ namespace RealtimeX.Dashboard.Services
             _configuration = configuration;
         }
 
+        public async Task<IEnumerable<User>> GetAllUsersAsync()
+        {
+            var repository = _unitOfWork.GetRepository<User>();
+            return await repository.GetAllAsync();
+        }
+
         public async Task<(bool success, string token)> LoginAsync(string username, string password)
         {
-            var user = await _unitOfWork.Repository<User>().FindAsync(u => u.Username == username);
-            var userEntity = user.FirstOrDefault();
+            var repository = _unitOfWork.GetRepository<User>();
+            var user = (await repository.FindAsync(u => u.Username == username)).FirstOrDefault();
 
-            if (userEntity == null || !VerifyPasswordHash(password, userEntity.PasswordHash))
-            {
+            if (user == null)
                 return (false, null);
-            }
 
-            var token = GenerateJwtToken(userEntity);
+            if (!VerifyPasswordHash(password, user.PasswordHash))
+                return (false, null);
+
+            var token = GenerateJwtToken(user);
             return (true, token);
         }
 
         public async Task<bool> RegisterAsync(User user, string password)
         {
-            if (await _unitOfWork.Repository<User>().FindAsync(u => u.Username == user.Username) != null)
-            {
+            var repository = _unitOfWork.GetRepository<User>();
+            var existingUser = (await repository.FindAsync(u => u.Username == user.Username || u.Email == user.Email)).FirstOrDefault();
+
+            if (existingUser != null)
                 return false;
-            }
 
             user.PasswordHash = HashPassword(password);
-            user.CreatedAt = DateTime.UtcNow;
-            user.IsActive = true;
+            await repository.AddAsync(user);
+            await _unitOfWork.SaveChangesAsync();
 
-            await _unitOfWork.Repository<User>().AddAsync(user);
-            await _unitOfWork.CompleteAsync();
+            return true;
+        }
 
+        public async Task<User> GetUserByIdAsync(string id)
+        {
+            var repository = _unitOfWork.GetRepository<User>();
+            return await repository.GetByIdAsync(id);
+        }
+
+        public async Task<bool> UpdateUserAsync(User user)
+        {
+            var repository = _unitOfWork.GetRepository<User>();
+            await repository.UpdateAsync(user);
+            await _unitOfWork.SaveChangesAsync();
             return true;
         }
 
         public async Task<bool> ChangePasswordAsync(int userId, string currentPassword, string newPassword)
         {
-            var user = await _unitOfWork.Repository<User>().GetByIdAsync(userId);
+            var repository = _unitOfWork.GetRepository<User>();
+            var user = await repository.GetByIdAsync(userId.ToString());
             if (user == null || !VerifyPasswordHash(currentPassword, user.PasswordHash))
             {
                 return false;
             }
 
             user.PasswordHash = HashPassword(newPassword);
-            await _unitOfWork.Repository<User>().UpdateAsync(user);
-            await _unitOfWork.CompleteAsync();
+            await repository.UpdateAsync(user);
+            await _unitOfWork.SaveChangesAsync();
 
             return true;
         }
@@ -115,14 +136,16 @@ namespace RealtimeX.Dashboard.Services
             return tokenHandler.WriteToken(token);
         }
 
-        private string HashPassword(string password)
-        {
-            return BCrypt.Net.BCrypt.HashPassword(password);
-        }
-
         private bool VerifyPasswordHash(string password, string storedHash)
         {
+            // Implement password verification logic here
             return BCrypt.Net.BCrypt.Verify(password, storedHash);
+        }
+
+        private string HashPassword(string password)
+        {
+            // Implement password hashing logic here
+            return BCrypt.Net.BCrypt.HashPassword(password);
         }
     }
 } 

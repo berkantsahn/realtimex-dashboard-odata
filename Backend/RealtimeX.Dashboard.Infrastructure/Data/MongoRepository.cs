@@ -13,70 +13,52 @@ namespace RealtimeX.Dashboard.Infrastructure.Data
     {
         private readonly IMongoCollection<T> _collection;
 
-        public MongoRepository(IMongoDatabase database, string collectionName)
+        public MongoRepository(IMongoDatabase database)
         {
-            _collection = database.GetCollection<T>(collectionName);
+            _collection = database.GetCollection<T>(typeof(T).Name);
         }
 
-        public async Task<T> GetByIdAsync(int id)
+        public async Task<IEnumerable<T>> GetAllAsync()
+        {
+            return await _collection.Find(_ => true).ToListAsync();
+        }
+
+        public async Task<T> GetByIdAsync(string id)
         {
             var filter = Builders<T>.Filter.Eq("_id", id);
             return await _collection.Find(filter).FirstOrDefaultAsync();
         }
 
-        public async Task<IReadOnlyList<T>> GetAllAsync()
-        {
-            return await _collection.Find(_ => true).ToListAsync();
-        }
-
-        public async Task<IReadOnlyList<T>> GetAsync(Expression<Func<T, bool>> predicate)
+        public async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate)
         {
             return await _collection.Find(predicate).ToListAsync();
         }
 
-        public async Task<IReadOnlyList<T>> GetAsync(Expression<Func<T, bool>> predicate = null,
-            Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null,
-            string includeString = null,
-            bool disableTracking = true)
-        {
-            var query = _collection.AsQueryable();
-
-            if (predicate != null)
-                query = query.Where(predicate);
-
-            if (orderBy != null)
-                query = orderBy(query);
-
-            return await query.ToListAsync();
-        }
-
-        public async Task<T> AddAsync(T entity)
+        public async Task AddAsync(T entity)
         {
             await _collection.InsertOneAsync(entity);
-            return entity;
         }
 
         public async Task UpdateAsync(T entity)
         {
-            var filter = Builders<T>.Filter.Eq("_id", GetEntityId(entity));
-            await _collection.ReplaceOneAsync(filter, entity);
+            var idProperty = entity.GetType().GetProperty("Id");
+            if (idProperty != null)
+            {
+                var id = idProperty.GetValue(entity);
+                var filter = Builders<T>.Filter.Eq("_id", id);
+                await _collection.ReplaceOneAsync(filter, entity);
+            }
         }
 
         public async Task DeleteAsync(T entity)
         {
-            var filter = Builders<T>.Filter.Eq("_id", GetEntityId(entity));
-            await _collection.DeleteOneAsync(filter);
-        }
-
-        public IQueryable<T> AsQueryable()
-        {
-            return _collection.AsQueryable();
-        }
-
-        private object GetEntityId(T entity)
-        {
-            var idProperty = typeof(T).GetProperty("Id");
-            return idProperty?.GetValue(entity);
+            var idProperty = entity.GetType().GetProperty("Id");
+            if (idProperty != null)
+            {
+                var id = idProperty.GetValue(entity);
+                var filter = Builders<T>.Filter.Eq("_id", id);
+                await _collection.DeleteOneAsync(filter);
+            }
         }
     }
 } 

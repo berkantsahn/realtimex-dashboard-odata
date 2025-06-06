@@ -7,10 +7,14 @@ namespace RealtimeX.Dashboard.Core.Interfaces
 {
     public interface IAnnouncementService
     {
+        Task<IEnumerable<Announcement>> GetAllAnnouncementsAsync();
+        Task<Announcement> GetAnnouncementByIdAsync(string id);
+        Task<Announcement> AddAnnouncementAsync(Announcement announcement);
+        Task<IEnumerable<Announcement>> GetAnnouncementsByDateRangeAsync(DateTime startDate, DateTime endDate);
+        Task<bool> UpdateAnnouncementAsync(string id, Announcement announcement);
+        Task<bool> DeleteAnnouncementAsync(string id);
         Task<IEnumerable<Announcement>> GetActiveAnnouncementsAsync();
         Task<Announcement> CreateAnnouncementAsync(Announcement announcement);
-        Task<bool> UpdateAnnouncementAsync(Announcement announcement);
-        Task<bool> DeleteAnnouncementAsync(int id);
-        Task<Announcement> GetAnnouncementByIdAsync(int id);
+        Task SendAnnouncementAsync(Announcement announcement);
     }
 } 

@@ -1,0 +1,16 @@
+C:\Users\Berkant\Documents\Github\realtimex-dashboard-odata\Backend\RealtimeX.Dashboard.Infrastructure\bin\Debug\net8.0\RealtimeX.Dashboard.Infrastructure.deps.json
+C:\Users\Berkant\Documents\Github\realtimex-dashboard-odata\Backend\RealtimeX.Dashboard.Infrastructure\bin\Debug\net8.0\RealtimeX.Dashboard.Infrastructure.dll
+C:\Users\Berkant\Documents\Github\realtimex-dashboard-odata\Backend\RealtimeX.Dashboard.Infrastructure\bin\Debug\net8.0\RealtimeX.Dashboard.Infrastructure.pdb
+C:\Users\Berkant\Documents\Github\realtimex-dashboard-odata\Backend\RealtimeX.Dashboard.Infrastructure\bin\Debug\net8.0\RealtimeX.Dashboard.Core.dll
+C:\Users\Berkant\Documents\Github\realtimex-dashboard-odata\Backend\RealtimeX.Dashboard.Infrastructure\bin\Debug\net8.0\RealtimeX.Dashboard.Core.pdb
+C:\Users\Berkant\Documents\Github\realtimex-dashboard-odata\Backend\RealtimeX.Dashboard.Infrastructure\obj\Debug\net8.0\RealtimeX.Dashboard.Infrastructure.csproj.AssemblyReference.cache
+C:\Users\Berkant\Documents\Github\realtimex-dashboard-odata\Backend\RealtimeX.Dashboard.Infrastructure\obj\Debug\net8.0\RealtimeX.Dashboard.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Berkant\Documents\Github\realtimex-dashboard-odata\Backend\RealtimeX.Dashboard.Infrastructure\obj\Debug\net8.0\RealtimeX.Dashboard.Infrastructure.AssemblyInfoInputs.cache
+C:\Users\Berkant\Documents\Github\realtimex-dashboard-odata\Backend\RealtimeX.Dashboard.Infrastructure\obj\Debug\net8.0\RealtimeX.Dashboard.Infrastructure.AssemblyInfo.cs
+C:\Users\Berkant\Documents\Github\realtimex-dashboard-odata\Backend\RealtimeX.Dashboard.Infrastructure\obj\Debug\net8.0\RealtimeX.Dashboard.Infrastructure.csproj.CoreCompileInputs.cache
+C:\Users\Berkant\Documents\Github\realtimex-dashboard-odata\Backend\RealtimeX.Dashboard.Infrastructure\obj\Debug\net8.0\RealtimeX.Dashboard.Infrastructure.sourcelink.json
+C:\Users\Berkant\Documents\Github\realtimex-dashboard-odata\Backend\RealtimeX.Dashboard.Infrastructure\obj\Debug\net8.0\Realtime.80A38898.Up2Date
+C:\Users\Berkant\Documents\Github\realtimex-dashboard-odata\Backend\RealtimeX.Dashboard.Infrastructure\obj\Debug\net8.0\RealtimeX.Dashboard.Infrastructure.dll
+C:\Users\Berkant\Documents\Github\realtimex-dashboard-odata\Backend\RealtimeX.Dashboard.Infrastructure\obj\Debug\net8.0\refint\RealtimeX.Dashboard.Infrastructure.dll
+C:\Users\Berkant\Documents\Github\realtimex-dashboard-odata\Backend\RealtimeX.Dashboard.Infrastructure\obj\Debug\net8.0\RealtimeX.Dashboard.Infrastructure.pdb
+C:\Users\Berkant\Documents\Github\realtimex-dashboard-odata\Backend\RealtimeX.Dashboard.Infrastructure\obj\Debug\net8.0\ref\RealtimeX.Dashboard.Infrastructure.dll
