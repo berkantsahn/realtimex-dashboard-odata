@@ -1,0 +1,56 @@
+<div class="media-viewer" *ngIf="message">
+  <div class="media-viewer-header">
+    <h2>{{ message.mediaName }}</h2>
+    <button mat-icon-button (click)="close()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <div class="media-viewer-content">
+    <!-- Resim -->
+    <img *ngIf="message.type === MediaType.Image"
+         [src]="getMediaUrl(message.mediaUrl)"
+         [alt]="message.mediaName"
+         class="media-image"
+         (error)="onMediaError($event)">
+
+    <!-- Video -->
+    <video *ngIf="message.type === MediaType.Video"
+           [src]="getMediaUrl(message.mediaUrl)"
+           controls
+           class="media-video"
+           (error)="onMediaError($event)">
+      Your browser does not support the video tag.
+    </video>
+
+    <!-- Ses -->
+    <div *ngIf="message.type === MediaType.Audio" class="media-audio">
+      <audio [src]="getMediaUrl(message.mediaUrl)" 
+             controls
+             (error)="onMediaError($event)">
+        Your browser does not support the audio element.
+      </audio>
+    </div>
+
+    <!-- Döküman -->
+    <div *ngIf="message.type === MediaType.Document" class="media-document">
+      <img [src]="'assets/icons/document.svg'" alt="Document icon">
+      <div class="document-info">
+        <span class="document-name">{{ message.mediaName }}</span>
+        <span class="document-size">{{ message.mediaSize | fileSize }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="media-viewer-footer">
+    <button mat-button (click)="downloadMedia()" [disabled]="!message.mediaUrl">
+      <mat-icon>download</mat-icon>
+      <span>Download</span>
+    </button>
+  </div>
+</div>
+
+<div class="media-error" *ngIf="hasError">
+  <mat-icon color="warn">error</mat-icon>
+  <p>Failed to load media content</p>
+</div> 

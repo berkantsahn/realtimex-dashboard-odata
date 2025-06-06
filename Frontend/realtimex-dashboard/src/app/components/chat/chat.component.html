@@ -1,0 +1,122 @@
+<div class="chat-container">
+  <div class="messages" #messageContainer>
+    <div *ngFor="let message of messages" 
+         [ngClass]="{'message': true, 'own-message': message.senderId === currentUserId}">
+      <div class="message-content">
+        <!-- Metin mesajı -->
+        <div *ngIf="message.type === MediaType.Text" class="text-message">
+          {{ message.content }}
+        </div>
+
+        <!-- Resim mesajı -->
+        <div *ngIf="message.type === MediaType.Image" class="media-message">
+          <img *ngIf="message.mediaUrl" 
+               [src]="getMediaUrl(message.mediaUrl)" 
+               (click)="openMediaViewer(message)"
+               [alt]="message.mediaName || 'Image'"
+               class="media-thumbnail">
+          <div class="media-info">
+            <span class="media-name">{{ message.mediaName || 'Image' }}</span>
+            <span class="media-size" *ngIf="message.mediaSize">{{ formatFileSize(message.mediaSize) }}</span>
+          </div>
+        </div>
+
+        <!-- Video mesajı -->
+        <div *ngIf="message.type === MediaType.Video" class="media-message">
+          <div class="video-thumbnail" (click)="openMediaViewer(message)">
+            <img *ngIf="message.mediaUrl"
+                 [src]="getThumbnailUrl(message.mediaUrl)" 
+                 [alt]="message.mediaName || 'Video'">
+            <div class="play-button">
+              <mat-icon>play_circle_outline</mat-icon>
+            </div>
+          </div>
+          <div class="media-info">
+            <span class="media-name">{{ message.mediaName || 'Video' }}</span>
+            <span class="media-size" *ngIf="message.mediaSize">{{ formatFileSize(message.mediaSize) }}</span>
+          </div>
+        </div>
+
+        <!-- Ses mesajı -->
+        <div *ngIf="message.type === MediaType.Audio" class="media-message">
+          <div class="audio-player">
+            <audio *ngIf="message.mediaUrl" 
+                   [src]="getMediaUrl(message.mediaUrl)" 
+                   controls></audio>
+          </div>
+          <div class="media-info">
+            <span class="media-name">{{ message.mediaName || 'Audio' }}</span>
+            <span class="media-size" *ngIf="message.mediaSize">{{ formatFileSize(message.mediaSize) }}</span>
+          </div>
+        </div>
+
+        <!-- Döküman mesajı -->
+        <div *ngIf="message.type === MediaType.Document" class="media-message">
+          <div class="document-preview" (click)="openMediaViewer(message)">
+            <mat-icon>{{ getMediaTypeIcon(message.type) }}</mat-icon>
+            <div class="media-info">
+              <span class="media-name">{{ message.mediaName || 'Document' }}</span>
+              <span class="media-size" *ngIf="message.mediaSize">{{ formatFileSize(message.mediaSize) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="message-meta">
+          <span class="message-time">{{ message.sentAt | date:'HH:mm' }}</span>
+          <span *ngIf="message.senderId === currentUserId" class="message-status">
+            <mat-icon *ngIf="message.isRead" class="read-status">done_all</mat-icon>
+            <mat-icon *ngIf="!message.isRead" class="unread-status">done</mat-icon>
+          </span>
+        </div>
+      </div>
+
+      <!-- Mesaj seçenekleri -->
+      <div class="message-actions" *ngIf="message.senderId === currentUserId">
+        <button mat-icon-button [matMenuTriggerFor]="messageMenu">
+          <mat-icon>more_vert</mat-icon>
+        </button>
+        <mat-menu #messageMenu="matMenu">
+          <button mat-menu-item (click)="deleteMessage(message.id)">
+            <mat-icon>delete</mat-icon>
+            <span>Delete</span>
+          </button>
+        </mat-menu>
+      </div>
+    </div>
+  </div>
+
+  <div class="message-input">
+    <!-- Medya yükleme göstergesi -->
+    <div *ngIf="isUploading" class="upload-progress">
+      <mat-progress-bar mode="determinate" [value]="uploadProgress"></mat-progress-bar>
+    </div>
+
+    <div class="input-container">
+      <!-- Medya yükleme butonu -->
+      <button mat-icon-button (click)="fileInput.click()" [disabled]="!selectedUserId">
+        <mat-icon>attach_file</mat-icon>
+      </button>
+      <input #fileInput type="file" 
+             (change)="onFileSelected($event)" 
+             accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx"
+             style="display: none">
+
+      <!-- Mesaj yazma alanı -->
+      <mat-form-field appearance="outline" class="message-field">
+        <input matInput
+               [(ngModel)]="newMessage"
+               placeholder="Type a message..."
+               [disabled]="!selectedUserId"
+               (keyup.enter)="sendMessage()">
+      </mat-form-field>
+
+      <!-- Gönderme butonu -->
+      <button mat-icon-button 
+              color="primary" 
+              [disabled]="!newMessage.trim() || !selectedUserId" 
+              (click)="sendMessage()">
+        <mat-icon>send</mat-icon>
+      </button>
+    </div>
+  </div>
+</div> 

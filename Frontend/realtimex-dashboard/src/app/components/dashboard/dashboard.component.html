@@ -1,0 +1,112 @@
+<div class="dashboard-container">
+  <div class="dashboard-header">
+    <h1>RealTimeX Dashboard</h1>
+    <div class="notification-controls">
+      <button mat-button (click)="markAllNotificationsAsRead()">
+        <mat-icon>done_all</mat-icon>
+        Mark All as Read
+      </button>
+    </div>
+  </div>
+
+  <div class="dashboard-content">
+    <!-- Grafik Bölümü -->
+    <mat-card class="dashboard-card chart-card">
+      <mat-card-header>
+        <mat-card-title>Gerçek Zamanlı Veri Grafiği</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <canvas baseChart
+          [data]="lineChartData"
+          [options]="lineChartOptions"
+          [type]="lineChartType">
+        </canvas>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- DataGrid Bölümü -->
+    <mat-card class="dashboard-card">
+      <mat-card-header>
+        <mat-card-title>Veri Listesi</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <app-data-grid></app-data-grid>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Real-time Data Section -->
+    <mat-card class="dashboard-card">
+      <mat-card-header>
+        <mat-card-title>Real-time Data</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="data-grid" *ngIf="realTimeData">
+          <div class="data-item" *ngFor="let item of realTimeData | keyvalue">
+            <span class="data-label">{{item.key}}</span>
+            <span class="data-value">{{item.value}}</span>
+          </div>
+        </div>
+        <div class="no-data" *ngIf="!realTimeData">
+          <mat-icon>sync</mat-icon>
+          <p>Waiting for real-time data...</p>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Announcements Section -->
+    <mat-card class="dashboard-card">
+      <mat-card-header>
+        <mat-card-title>Announcements</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="announcement-list">
+          <div class="announcement-item" *ngFor="let announcement of announcements">
+            <mat-icon class="announcement-icon">campaign</mat-icon>
+            <div class="announcement-content">
+              <h3>{{announcement.title}}</h3>
+              <p>{{announcement.message}}</p>
+              <span class="announcement-time">{{announcement.timestamp | date:'medium'}}</span>
+            </div>
+          </div>
+          <div class="no-data" *ngIf="announcements.length === 0">
+            <mat-icon>campaign</mat-icon>
+            <p>No active announcements</p>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Notifications Section -->
+    <mat-card class="dashboard-card">
+      <mat-card-header>
+        <mat-card-title>Notifications</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="notification-list">
+          <div class="notification-item" *ngFor="let notification of notifications"
+               [class.unread]="!notification.isRead">
+            <mat-icon class="notification-icon">notifications</mat-icon>
+            <div class="notification-content">
+              <h3>{{notification.title}}</h3>
+              <p>{{notification.message}}</p>
+              <span class="notification-time">{{notification.timestamp | date:'medium'}}</span>
+            </div>
+            <div class="notification-actions">
+              <button mat-icon-button (click)="markNotificationAsRead(notification.id)"
+                      *ngIf="!notification.isRead">
+                <mat-icon>done</mat-icon>
+              </button>
+              <button mat-icon-button (click)="deleteNotification(notification.id)">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
+          </div>
+          <div class="no-data" *ngIf="notifications.length === 0">
+            <mat-icon>notifications</mat-icon>
+            <p>No notifications</p>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div> 
