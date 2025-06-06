@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using RealtimeX.Dashboard.Core.Entities;
@@ -45,8 +46,9 @@ namespace RealtimeX.Dashboard.API.Hubs
             await base.OnConnectedAsync();
         }
 
-        public override async Task OnDisconnectedAsync(System.Exception exception)
+        public override async Task OnDisconnectedAsync(Exception? exception)
         {
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, "DashboardGroup");
             await base.OnDisconnectedAsync(exception);
         }
     }

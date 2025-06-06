@@ -14,24 +14,26 @@ namespace RealtimeX.Dashboard.API.Controllers
     {
         private readonly IRealTimeDataService _realTimeDataService;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IRepository<RealTimeData> _repository;
 
         public RealTimeDataController(IRealTimeDataService realTimeDataService, IUnitOfWork unitOfWork)
         {
             _realTimeDataService = realTimeDataService;
             _unitOfWork = unitOfWork;
+            _repository = _unitOfWork.GetRepository<RealTimeData>();
         }
 
         [EnableQuery]
-        public IActionResult Get()
+        public async Task<IActionResult> Get()
         {
-            var data = _unitOfWork.Repository<RealTimeData>().GetAll();
+            var data = await _repository.GetAllAsync();
             return Ok(data);
         }
 
         [EnableQuery]
-        public async Task<IActionResult> Get([FromRoute] int key)
+        public async Task<IActionResult> Get([FromRoute] string key)
         {
-            var data = await _unitOfWork.Repository<RealTimeData>().GetByIdAsync(key);
+            var data = await _repository.GetByIdAsync(key);
             if (data == null)
             {
                 return NotFound();
@@ -46,48 +48,48 @@ namespace RealtimeX.Dashboard.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            await _unitOfWork.Repository<RealTimeData>().AddAsync(data);
-            await _unitOfWork.CompleteAsync();
+            await _repository.AddAsync(data);
+            await _unitOfWork.SaveChangesAsync();
 
             // SignalR ile gerçek zamanlı güncelleme gönder
-            await _realTimeDataService.BroadcastDataAsync(data);
+            await _realTimeDataService.SendDataAsync(data);
 
             return Created(data);
         }
 
-        public async Task<IActionResult> Put([FromRoute] int key, [FromBody] RealTimeData update)
+        public async Task<IActionResult> Put([FromRoute] string key, [FromBody] RealTimeData update)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var data = await _unitOfWork.Repository<RealTimeData>().GetByIdAsync(key);
+            var data = await _repository.GetByIdAsync(key);
             if (data == null)
             {
                 return NotFound();
             }
 
             // Entity güncelleme
-            _unitOfWork.Repository<RealTimeData>().Update(update);
-            await _unitOfWork.CompleteAsync();
+            await _repository.UpdateAsync(update);
+            await _unitOfWork.SaveChangesAsync();
 
             // SignalR ile gerçek zamanlı güncelleme gönder
-            await _realTimeDataService.BroadcastDataAsync(update);
+            await _realTimeDataService.SendDataAsync(update);
 
             return Updated(update);
         }
 
-        public async Task<IActionResult> Delete([FromRoute] int key)
+        public async Task<IActionResult> Delete([FromRoute] string key)
         {
-            var data = await _unitOfWork.Repository<RealTimeData>().GetByIdAsync(key);
+            var data = await _repository.GetByIdAsync(key);
             if (data == null)
             {
                 return NotFound();
             }
 
-            _unitOfWork.Repository<RealTimeData>().Delete(data);
-            await _unitOfWork.CompleteAsync();
+            await _repository.DeleteAsync(data);
+            await _unitOfWork.SaveChangesAsync();
 
             return NoContent();
         }

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RealtimeX.Dashboard.Core.Entities;
 using RealtimeX.Dashboard.Core.Interfaces;
+using System.ComponentModel.DataAnnotations;
 
 namespace RealtimeX.Dashboard.API.Controllers
 {
@@ -66,22 +67,38 @@ namespace RealtimeX.Dashboard.API.Controllers
 
     public class LoginRequest
     {
-        public string Username { get; set; }
-        public string Password { get; set; }
+        [Required]
+        public string Username { get; set; } = null!;
+        
+        [Required]
+        public string Password { get; set; } = null!;
     }
 
     public class RegisterRequest
     {
-        public string Username { get; set; }
-        public string Email { get; set; }
-        public string Password { get; set; }
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
+        [Required]
+        public string Username { get; set; } = null!;
+        
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; } = null!;
+        
+        [Required]
+        public string Password { get; set; } = null!;
+        
+        [Required]
+        public string FirstName { get; set; } = null!;
+        
+        [Required]
+        public string LastName { get; set; } = null!;
     }
 
     public class ChangePasswordRequest
     {
-        public string CurrentPassword { get; set; }
-        public string NewPassword { get; set; }
+        [Required]
+        public string CurrentPassword { get; set; } = null!;
+        
+        [Required]
+        public string NewPassword { get; set; } = null!;
     }
 } 

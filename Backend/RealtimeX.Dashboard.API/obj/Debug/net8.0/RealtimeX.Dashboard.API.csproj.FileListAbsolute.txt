@@ -1,0 +1,8 @@
+C:\Users\Berkant\Documents\Github\realtimex-dashboard-odata\Backend\RealtimeX.Dashboard.API\obj\Debug\net8.0\RealtimeX.Dashboard.API.csproj.AssemblyReference.cache
+C:\Users\Berkant\Documents\Github\realtimex-dashboard-odata\Backend\RealtimeX.Dashboard.API\obj\Debug\net8.0\RealtimeX.Dashboard.API.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Berkant\Documents\Github\realtimex-dashboard-odata\Backend\RealtimeX.Dashboard.API\obj\Debug\net8.0\RealtimeX.Dashboard.API.AssemblyInfoInputs.cache
+C:\Users\Berkant\Documents\Github\realtimex-dashboard-odata\Backend\RealtimeX.Dashboard.API\obj\Debug\net8.0\RealtimeX.Dashboard.API.AssemblyInfo.cs
+C:\Users\Berkant\Documents\Github\realtimex-dashboard-odata\Backend\RealtimeX.Dashboard.API\obj\Debug\net8.0\RealtimeX.Dashboard.API.csproj.CoreCompileInputs.cache
+C:\Users\Berkant\Documents\Github\realtimex-dashboard-odata\Backend\RealtimeX.Dashboard.API\obj\Debug\net8.0\RealtimeX.Dashboard.API.MvcApplicationPartsAssemblyInfo.cs
+C:\Users\Berkant\Documents\Github\realtimex-dashboard-odata\Backend\RealtimeX.Dashboard.API\obj\Debug\net8.0\RealtimeX.Dashboard.API.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\Berkant\Documents\Github\realtimex-dashboard-odata\Backend\RealtimeX.Dashboard.API\obj\Debug\net8.0\RealtimeX.Dashboard.API.sourcelink.json

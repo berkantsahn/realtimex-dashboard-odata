@@ -10,28 +10,30 @@ using RealtimeX.Dashboard.Core.Interfaces;
 namespace RealtimeX.Dashboard.API.Controllers
 {
     [Authorize]
-    public class AnnouncementsController : ODataController
+    public class AnnouncementController : ODataController
     {
         private readonly IAnnouncementService _announcementService;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IRepository<Announcement> _repository;
 
-        public AnnouncementsController(IAnnouncementService announcementService, IUnitOfWork unitOfWork)
+        public AnnouncementController(IAnnouncementService announcementService, IUnitOfWork unitOfWork)
         {
             _announcementService = announcementService;
             _unitOfWork = unitOfWork;
+            _repository = _unitOfWork.GetRepository<Announcement>();
         }
 
         [EnableQuery]
-        public IActionResult Get()
+        public async Task<IActionResult> Get()
         {
-            var announcements = _unitOfWork.Repository<Announcement>().GetAll();
+            var announcements = await _repository.GetAllAsync();
             return Ok(announcements);
         }
 
         [EnableQuery]
-        public async Task<IActionResult> Get([FromRoute] int key)
+        public async Task<IActionResult> Get([FromRoute] string key)
         {
-            var announcement = await _unitOfWork.Repository<Announcement>().GetByIdAsync(key);
+            var announcement = await _repository.GetByIdAsync(key);
             if (announcement == null)
             {
                 return NotFound();
@@ -46,49 +48,48 @@ namespace RealtimeX.Dashboard.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            announcement.CreatedAt = DateTime.UtcNow;
-            await _unitOfWork.Repository<Announcement>().AddAsync(announcement);
-            await _unitOfWork.CompleteAsync();
+            await _repository.AddAsync(announcement);
+            await _unitOfWork.SaveChangesAsync();
 
-            // SignalR ile duyuruyu yayınla
-            await _announcementService.BroadcastAnnouncementAsync(announcement);
+            // SignalR ile gerçek zamanlı güncelleme gönder
+            await _announcementService.SendAnnouncementAsync(announcement);
 
             return Created(announcement);
         }
 
-        public async Task<IActionResult> Put([FromRoute] int key, [FromBody] Announcement update)
+        public async Task<IActionResult> Put([FromRoute] string key, [FromBody] Announcement update)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var announcement = await _unitOfWork.Repository<Announcement>().GetByIdAsync(key);
+            var announcement = await _repository.GetByIdAsync(key);
             if (announcement == null)
             {
                 return NotFound();
             }
 
-            update.UpdatedAt = DateTime.UtcNow;
-            _unitOfWork.Repository<Announcement>().Update(update);
-            await _unitOfWork.CompleteAsync();
+            // Entity güncelleme
+            await _repository.UpdateAsync(update);
+            await _unitOfWork.SaveChangesAsync();
 
-            // SignalR ile güncellenmiş duyuruyu yayınla
-            await _announcementService.BroadcastAnnouncementAsync(update);
+            // SignalR ile gerçek zamanlı güncelleme gönder
+            await _announcementService.SendAnnouncementAsync(update);
 
             return Updated(update);
         }
 
-        public async Task<IActionResult> Delete([FromRoute] int key)
+        public async Task<IActionResult> Delete([FromRoute] string key)
         {
-            var announcement = await _unitOfWork.Repository<Announcement>().GetByIdAsync(key);
+            var announcement = await _repository.GetByIdAsync(key);
             if (announcement == null)
             {
                 return NotFound();
             }
 
-            _unitOfWork.Repository<Announcement>().Delete(announcement);
-            await _unitOfWork.CompleteAsync();
+            await _repository.DeleteAsync(announcement);
+            await _unitOfWork.SaveChangesAsync();
 
             return NoContent();
         }

@@ -1,16 +1,24 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.OData;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi.Models.References;
 using Microsoft.OData.Edm;
 using Microsoft.OData.ModelBuilder;
+using MongoDB.Driver;
+using RealtimeX.Dashboard.Core.Entities;
 using RealtimeX.Dashboard.Core.Interfaces;
+using RealtimeX.Dashboard.Core.Hubs;
 using RealtimeX.Dashboard.Infrastructure.Data;
-using RealtimeX.Dashboard.Infrastructure.Repositories;
-using RealtimeX.Dashboard.Infrastructure.UnitOfWork;
 using RealtimeX.Dashboard.Services;
+using RealtimeX.Dashboard.API.Hubs;
+using RealtimeX.Dashboard.API.Settings;
+using ChatHub = RealtimeX.Dashboard.API.Hubs.ChatHub;
+using DashboardHub = RealtimeX.Dashboard.API.Hubs.DashboardHub;
+using RealtimeX.Dashboard.Infrastructure.Repositories;
+using Swashbuckle.AspNetCore.SwaggerGen;
+using Swashbuckle.AspNetCore.Annotations;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,10 +26,10 @@ var builder = WebApplication.CreateBuilder(args);
 static IEdmModel GetEdmModel()
 {
     var builder = new ODataConventionModelBuilder();
-    builder.EntitySet<User>("Users");
+    builder.EntitySet<RealTimeData>("RealTimeData");
     builder.EntitySet<Announcement>("Announcements");
     builder.EntitySet<ChatMessage>("ChatMessages");
-    builder.EntitySet<RealTimeData>("RealTimeData");
+    builder.EntitySet<User>("Users");
     return builder.GetEdmModel();
 }
 
@@ -36,26 +44,24 @@ builder.Services.AddControllers()
         .Expand()
         .AddRouteComponents("odata", GetEdmModel()));
 
-// Configure DbContext
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+// Configure MongoDB
+var mongoDbSettings = builder.Configuration.GetSection("MongoDbSettings").Get<MongoDbSettings>() 
+    ?? throw new InvalidOperationException("MongoDbSettings section is missing in configuration");
 
-// Configure JWT Authentication
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidAudience = builder.Configuration["Jwt:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
-        };
-    });
+builder.Services.AddSingleton<IMongoClient>(new MongoClient(mongoDbSettings.ConnectionString));
+builder.Services.AddScoped<IMongoDatabase>(sp =>
+    sp.GetRequiredService<IMongoClient>().GetDatabase(mongoDbSettings.DatabaseName));
+
+// Configure repositories and unit of work
+builder.Services.AddScoped(typeof(IRepository<>), typeof(RealtimeX.Dashboard.Infrastructure.Data.MongoRepository<>));
+builder.Services.AddScoped<IUnitOfWork, RealtimeX.Dashboard.Infrastructure.Data.MongoUnitOfWork>();
+
+// Configure services
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IChatService, ChatService>();
+builder.Services.AddScoped<IMediaService, MediaService>();
+builder.Services.AddScoped<IRealTimeDataService, RealTimeDataService>();
+builder.Services.AddScoped<IAnnouncementService, AnnouncementService>();
 
 // Configure SignalR
 builder.Services.AddSignalR();
@@ -63,35 +69,77 @@ builder.Services.AddSignalR();
 // Configure CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAngularApp",
-        builder => builder
-            .WithOrigins("http://localhost:4200")
-            .AllowAnyMethod()
-            .AllowAnyHeader()
-            .AllowCredentials());
+    options.AddPolicy("AllowAll", builder =>
+        builder.AllowAnyOrigin()
+               .AllowAnyMethod()
+               .AllowAnyHeader());
+});
+
+// Configure JWT Authentication
+var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>()
+    ?? throw new InvalidOperationException("JwtSettings section is missing in configuration");
+
+var key = Encoding.ASCII.GetBytes(jwtSettings.Secret);
+
+builder.Services.AddAuthentication(x =>
+{
+    x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(x =>
+{
+    x.RequireHttpsMetadata = false;
+    x.SaveToken = true;
+    x.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(key),
+        ValidateIssuer = false,
+        ValidateAudience = false,
+        ValidateLifetime = true,
+        ClockSkew = TimeSpan.Zero
+    };
+
+    x.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            var accessToken = context.Request.Query["access_token"];
+            var path = context.HttpContext.Request.Path;
+            if (!string.IsNullOrEmpty(accessToken) && 
+                (path.StartsWithSegments("/hubs/chat") || 
+                 path.StartsWithSegments("/hubs/dashboard")))
+            {
+                context.Token = accessToken;
+            }
+            return Task.CompletedTask;
+        }
+    };
 });
 
 // Configure Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "RealtimeX Dashboard API", Version = "v1" });
-    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "RealtimeX Dashboard API", Version = "v1" });
+    
+    c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
     {
-        Description = "JWT Authorization header using the Bearer scheme",
+        Description = "JWT Authorization header using the Bearer scheme. Example: 'Bearer {token}'",
         Name = "Authorization",
-        In = ParameterLocation.Header,
-        Type = SecuritySchemeType.ApiKey,
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
         Scheme = "Bearer"
     });
-    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+
+    c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
     {
         {
-            new OpenApiSecurityScheme
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
             {
-                Reference = new OpenApiReference
+                Reference = new Microsoft.OpenApi.Models.OpenApiReference
                 {
-                    Type = ReferenceType.SecurityScheme,
+                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
                     Id = "Bearer"
                 }
             },
@@ -99,14 +147,6 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 });
-
-// Register services
-builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IRealTimeDataService, RealTimeDataService>();
-builder.Services.AddScoped<IAnnouncementService, AnnouncementService>();
-builder.Services.AddScoped<IChatService, ChatService>();
 
 var app = builder.Build();
 
@@ -118,13 +158,13 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseCors("AllowAngularApp");
+app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-app.MapHub<Hubs.DashboardHub>("/hubs/dashboard");
-app.MapHub<Hubs.ChatHub>("/hubs/chat");
+app.MapHub<ChatHub>("/hubs/chat");
+app.MapHub<DashboardHub>("/hubs/dashboard");
 
 app.Run();
 
@@ -132,3 +172,5 @@ record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
 {
     public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
 }
+
+

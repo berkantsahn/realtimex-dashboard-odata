@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.Http;
 using RealtimeX.Dashboard.Core.Entities;
 using RealtimeX.Dashboard.Core.Interfaces;
+using System.Security.Claims;
 
 namespace RealtimeX.Dashboard.API.Hubs
 {
@@ -18,20 +19,31 @@ namespace RealtimeX.Dashboard.API.Hubs
             _mediaService = mediaService;
         }
 
-        public async Task SendMessage(ChatMessage message)
+        public async Task SendMessage(string message, string recipientId)
         {
-            message.SentAt = DateTime.UtcNow;
-            message.IsRead = false;
-            
-            await _chatService.SaveMessageAsync(message);
-            
-            await Clients.User(message.ReceiverId.ToString()).SendAsync("ReceiveMessage", message);
+            var senderId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(senderId))
+            {
+                throw new HubException("Invalid sender ID");
+            }
+
+            if (string.IsNullOrEmpty(recipientId))
+            {
+                throw new HubException("Invalid recipient ID");
+            }
+
+            var chatMessage = await _chatService.SaveMessageAsync(senderId, recipientId, message);
+            if (chatMessage != null)
+            {
+                await Clients.Group($"user_{recipientId}").SendAsync("ReceiveMessage", chatMessage);
+                await Clients.Caller.SendAsync("MessageSent", chatMessage);
+            }
         }
 
-        public async Task SendMediaMessage(IFormFile file, int receiverId)
+        public async Task SendMediaMessage(IFormFile file, string receiverId)
         {
-            var userId = int.Parse(Context.UserIdentifier);
-            var mediaResult = await _mediaService.UploadMediaAsync(file, userId.ToString());
+            var userId = Context.UserIdentifier;
+            var mediaResult = await _mediaService.UploadMediaAsync(file, userId);
 
             var message = new ChatMessage
             {
@@ -45,25 +57,26 @@ namespace RealtimeX.Dashboard.API.Hubs
                 MediaMimeType = mediaResult.MimeType,
                 MediaDuration = mediaResult.Duration,
                 Type = GetMediaType(mediaResult.MimeType),
+                CreatedAt = DateTime.UtcNow,
                 SentAt = DateTime.UtcNow,
                 IsRead = false
             };
 
             await _chatService.SaveMessageAsync(message);
-            await Clients.User(receiverId.ToString()).SendAsync("ReceiveMessage", message);
+            await Clients.User(receiverId).SendAsync("ReceiveMessage", message);
         }
 
-        public async Task MarkAsRead(int messageId)
+        public async Task MarkAsRead(string messageId)
         {
             var message = await _chatService.MarkAsReadAsync(messageId);
             if (message != null)
             {
-                await Clients.User(message.SenderId.ToString())
+                await Clients.User(message.SenderId)
                     .SendAsync("MessageRead", new { MessageId = messageId, ReadAt = message.ReadAt });
             }
         }
 
-        public async Task DeleteMessage(int messageId)
+        public async Task DeleteMessage(string messageId)
         {
             var message = await _chatService.GetMessageByIdAsync(messageId);
             if (message != null && !string.IsNullOrEmpty(message.MediaUrl))
@@ -71,8 +84,8 @@ namespace RealtimeX.Dashboard.API.Hubs
                 await _mediaService.DeleteMediaAsync(message.MediaUrl);
             }
 
-            await _chatService.DeleteMessageAsync(messageId, int.Parse(Context.UserIdentifier));
-            await Clients.Users(new[] { message.SenderId.ToString(), message.ReceiverId.ToString() })
+            await _chatService.DeleteMessageAsync(messageId, Context.UserIdentifier);
+            await Clients.Users(new[] { message.SenderId, message.ReceiverId })
                 .SendAsync("MessageDeleted", messageId);
         }
 
@@ -88,33 +101,35 @@ namespace RealtimeX.Dashboard.API.Hubs
 
         public override async Task OnConnectedAsync()
         {
-            var userId = Context.User?.FindFirst("sub")?.Value;
-            if (!string.IsNullOrEmpty(userId))
+            var userId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
             {
-                await Groups.AddToGroupAsync(Context.ConnectionId, $"User_{userId}");
+                throw new HubException("Invalid user ID");
             }
+
+            await Groups.AddToGroupAsync(Context.ConnectionId, $"user_{userId}");
             await base.OnConnectedAsync();
         }
 
-        public override async Task OnDisconnectedAsync(Exception exception)
+        public override async Task OnDisconnectedAsync(Exception? exception)
         {
-            var userId = Context.User?.FindFirst("sub")?.Value;
+            var userId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!string.IsNullOrEmpty(userId))
             {
-                await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"User_{userId}");
+                await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"user_{userId}");
             }
             await base.OnDisconnectedAsync(exception);
         }
 
-        private MediaType GetMediaType(string mimeType)
+        private string GetMediaType(string mimeType)
         {
             if (mimeType.StartsWith("image/"))
-                return MediaType.Image;
+                return "image";
             if (mimeType.StartsWith("video/"))
-                return MediaType.Video;
+                return "video";
             if (mimeType.StartsWith("audio/"))
-                return MediaType.Audio;
-            return MediaType.Document;
+                return "audio";
+            return "document";
         }
     }
 } 
