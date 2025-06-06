@@ -85,17 +85,7 @@ export class ChatComponent implements OnInit {
   sendMessage(): void {
     if (!this.newMessage.trim()) return;
 
-    const message: ChatMessage = {
-      id: 0,
-      senderId: this.currentUserId,
-      receiverId: this.selectedUserId,
-      content: this.newMessage,
-      type: MediaType.Text,
-      sentAt: new Date(),
-      isRead: false
-    };
-
-    this.chatService.sendMessage(message).subscribe({
+    this.chatService.sendMessage(this.selectedUserId, this.newMessage).subscribe({
       next: (response) => {
         this.messages.push(response);
         this.newMessage = '';

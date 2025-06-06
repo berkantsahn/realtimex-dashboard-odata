@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
 import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr';
-import { Subject } from 'rxjs';
+import { Subject, Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { RealTimeData } from '../models/real-time-data.model';
 import { ChatMessage } from '../models/chat-message.model';
 import { Announcement } from '../models/announcement.model';
+import { Notification } from '../models/notification.model';
 
 @Injectable({
   providedIn: 'root'
@@ -14,11 +15,13 @@ export class RealTimeService {
   private dataSubject = new Subject<RealTimeData>();
   private messageSubject = new Subject<ChatMessage>();
   private announcementSubject = new Subject<Announcement>();
+  private notificationSubject = new Subject<Notification>();
 
   // Observable streams
   public dataReceived = this.dataSubject.asObservable();
   public messageReceived = this.messageSubject.asObservable();
   public announcementReceived = this.announcementSubject.asObservable();
+  public notificationReceived = this.notificationSubject.asObservable();
 
   constructor() {
     this.hubConnection = new HubConnectionBuilder()
@@ -60,6 +63,24 @@ export class RealTimeService {
     this.hubConnection.on('ReceiveAnnouncement', (announcement: Announcement) => {
       this.announcementSubject.next(announcement);
     });
+
+    // Bildirimler
+    this.hubConnection.on('ReceiveNotification', (notification: Notification) => {
+      this.notificationSubject.next(notification);
+    });
+  }
+
+  // Stream metodları
+  public getDataStream(): Observable<RealTimeData> {
+    return this.dataReceived;
+  }
+
+  public getAnnouncementStream(): Observable<Announcement> {
+    return this.announcementReceived;
+  }
+
+  public getNotificationStream(): Observable<Notification> {
+    return this.notificationReceived;
   }
 
   // Veri gönderme metodları

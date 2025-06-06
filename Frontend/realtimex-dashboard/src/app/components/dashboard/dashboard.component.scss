@@ -1,7 +1,8 @@
 .dashboard-container {
-  padding: 20px;
-  height: 100%;
-  background-color: #f5f5f5;
+  display: grid;
+  gap: var(--spacing-lg);
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  animation: fadeIn 0.3s ease-out;
 }
 
 .dashboard-header {
@@ -25,17 +26,110 @@
 
 .dashboard-card {
   height: 100%;
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  min-height: 200px;
+  padding: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  
+  &.stats {
+    background: linear-gradient(135deg, #26c6da 0%, #00acc1 100%);
+    color: white;
+  }
+  
+  &.chart {
+    background: white;
+  }
+  
+  &.activity {
+    background: linear-gradient(135deg, #7e57c2 0%, #5e35b1 100%);
+    color: white;
+  }
 
   mat-card-header {
-    padding: 16px;
-    border-bottom: 1px solid #eee;
+    padding: 0;
+    margin-bottom: var(--spacing-md);
+
+    mat-card-title {
+      font-size: 1.25rem;
+      font-weight: 500;
+      margin: 0;
+    }
+
+    mat-card-subtitle {
+      color: inherit;
+      opacity: 0.8;
+      margin: var(--spacing-xs) 0 0;
+    }
   }
 
   mat-card-content {
-    padding: 16px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+
+    .stat-value {
+      font-size: 2.5rem;
+      font-weight: 500;
+      margin: 0;
+    }
+
+    .stat-label {
+      font-size: 1rem;
+      opacity: 0.8;
+      margin: 0;
+    }
+
+    .chart-container {
+      flex: 1;
+      min-height: 300px;
+      position: relative;
+    }
+
+    .activity-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-sm);
+
+      .activity-item {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        padding: var(--spacing-sm);
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: var(--border-radius);
+        transition: all 0.3s ease;
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.15);
+          transform: translateX(4px);
+        }
+
+        mat-icon {
+          font-size: 1.5rem;
+          width: 1.5rem;
+          height: 1.5rem;
+        }
+
+        .activity-details {
+          flex: 1;
+
+          .activity-title {
+            font-weight: 500;
+            margin: 0;
+          }
+
+          .activity-time {
+            font-size: 0.875rem;
+            opacity: 0.8;
+            margin: var(--spacing-xs) 0 0;
+          }
+        }
+      }
+    }
   }
 }
 
@@ -142,8 +236,22 @@
 }
 
 @media (max-width: 768px) {
-  .dashboard-content {
+  .dashboard-container {
     grid-template-columns: 1fr;
+  }
+
+  .dashboard-card {
+    min-height: 150px;
+
+    mat-card-content {
+      .stat-value {
+        font-size: 2rem;
+      }
+
+      .chart-container {
+        min-height: 200px;
+      }
+    }
   }
 
   .data-grid {

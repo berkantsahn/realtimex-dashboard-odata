@@ -1,0 +1,115 @@
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.mat-toolbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 0 var(--spacing-lg);
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: white;
+    text-decoration: none;
+    
+    mat-icon {
+      font-size: 2rem;
+      width: 2rem;
+      height: 2rem;
+    }
+  }
+
+  nav {
+    margin-left: auto;
+    display: flex;
+    gap: var(--spacing-md);
+
+    a {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+      color: rgba(255, 255, 255, 0.8);
+      text-decoration: none;
+      font-weight: 500;
+      padding: var(--spacing-sm) var(--spacing-md);
+      border-radius: var(--border-radius);
+      transition: all 0.3s ease;
+
+      mat-icon {
+        font-size: 1.2rem;
+        width: 1.2rem;
+        height: 1.2rem;
+      }
+
+      &:hover {
+        color: white;
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      &.active {
+        color: white;
+        background: rgba(255, 255, 255, 0.15);
+      }
+    }
+  }
+}
+
+main {
+  flex: 1;
+  margin-top: 64px; // Toolbar height
+  padding: var(--spacing-lg);
+  background-color: var(--background-color);
+
+  .container {
+    animation: fadeIn 0.3s ease-out;
+  }
+}
+
+@media (max-width: 768px) {
+  .mat-toolbar {
+    padding: 0 var(--spacing-sm);
+
+    .brand {
+      font-size: 1.2rem;
+
+      mat-icon {
+        font-size: 1.5rem;
+        width: 1.5rem;
+        height: 1.5rem;
+      }
+    }
+
+    nav {
+      gap: var(--spacing-sm);
+
+      a {
+        padding: var(--spacing-xs) var(--spacing-sm);
+
+        span {
+          display: none;
+        }
+
+        mat-icon {
+          font-size: 1.5rem;
+          width: 1.5rem;
+          height: 1.5rem;
+        }
+      }
+    }
+  }
+
+  main {
+    padding: var(--spacing-md);
+  }
+}

@@ -2,89 +2,48 @@
   [dataSource]="dataSource"
   [showBorders]="true"
   [columnAutoWidth]="true"
-  [rowAlternationEnabled]="true"
   [allowColumnReordering]="true"
   [allowColumnResizing]="true"
-  [showColumnLines]="true"
-  [showRowLines]="true"
-  [remoteOperations]="true"
-  [repaintChangesOnly]="true"
-  [refreshMode]="refreshMode"
+  [rowAlternationEnabled]="true"
   (onToolbarPreparing)="onToolbarPreparing($event)"
   (onRowUpdating)="onRowUpdating($event)"
   (onRowInserting)="onRowInserting($event)"
   (onRowRemoving)="onRowRemoving($event)">
 
-  <dxo-load-panel
-    [enabled]="true"
-    [showIndicator]="true"
-    [showPane]="true"
-    [shading]="true"
-    [showLoadIndicator]="loading">
-  </dxo-load-panel>
-
+  <dxo-load-panel [enabled]="true"></dxo-load-panel>
+  <dxo-scrolling mode="virtual"></dxo-scrolling>
+  <dxo-sorting mode="multiple"></dxo-sorting>
   <dxo-filter-row [visible]="true"></dxo-filter-row>
   <dxo-header-filter [visible]="true"></dxo-header-filter>
   <dxo-search-panel [visible]="true" [width]="240"></dxo-search-panel>
   <dxo-group-panel [visible]="true"></dxo-group-panel>
   <dxo-grouping [autoExpandAll]="false"></dxo-grouping>
-  <dxo-paging [pageSize]="10"></dxo-paging>
-  <dxo-pager
-    [showPageSizeSelector]="true"
-    [allowedPageSizes]="[5, 10, 20, 50]"
-    [showInfo]="true">
-  </dxo-pager>
-  <dxo-export [enabled]="true" fileName="RealTimeData"></dxo-export>
+  <dxo-selection mode="single"></dxo-selection>
+  <dxo-export [enabled]="true"></dxo-export>
 
-  <dxi-column dataField="id" [allowSorting]="true" [allowFiltering]="true"></dxi-column>
-  <dxi-column dataField="deviceId" caption="Device ID" [allowSorting]="true" [allowFiltering]="true"></dxi-column>
-  <dxi-column dataField="value" [allowSorting]="true" [allowFiltering]="true">
-    <dxo-format type="fixedPoint" [precision]="2"></dxo-format>
-  </dxi-column>
-  <dxi-column dataField="timestamp" caption="Time" [allowSorting]="true" [allowFiltering]="true">
-    <dxo-format type="datetime" format="yyyy-MM-dd HH:mm:ss"></dxo-format>
-  </dxi-column>
-  <dxi-column dataField="type" [allowSorting]="true" [allowFiltering]="true"></dxi-column>
-  <dxi-column dataField="status" [allowSorting]="true" [allowFiltering]="true">
-    <dxo-lookup
-      [dataSource]="['Active', 'Inactive', 'Error', 'Warning']">
-    </dxo-lookup>
-  </dxi-column>
-
-  <dxo-master-detail [enabled]="true" template="metadataTemplate">
-  </dxo-master-detail>
-
-  <div *dxTemplate="let data of 'metadataTemplate'">
-    <div class="metadata-container">
-      <h4>Metadata</h4>
-      <dx-data-grid
-        [dataSource]="convertMetadataToArray(data.data.metadata)"
-        [showBorders]="true"
-        [columnAutoWidth]="true">
-        <dxi-column dataField="key" caption="Property"></dxi-column>
-        <dxi-column dataField="value" caption="Value"></dxi-column>
-      </dx-data-grid>
-    </div>
-  </div>
+  <dxi-column dataField="id" caption="ID" [width]="70" [allowEditing]="false"></dxi-column>
+  <dxi-column dataField="timestamp" caption="Timestamp" dataType="datetime"></dxi-column>
+  <dxi-column dataField="value" caption="Value" dataType="number"></dxi-column>
+  <dxi-column dataField="unit" caption="Unit"></dxi-column>
+  <dxi-column dataField="source" caption="Source"></dxi-column>
+  <dxi-column dataField="status" caption="Status"></dxi-column>
+  <dxi-column dataField="metadata" caption="Metadata" [calculateCellValue]="convertMetadataToArray"></dxi-column>
 
   <dxo-editing
     mode="popup"
     [allowUpdating]="true"
     [allowDeleting]="true"
     [allowAdding]="true">
-    <dxo-popup
-      title="Edit Record"
-      [showTitle]="true"
-      [width]="700"
-      [height]="525">
-    </dxo-popup>
-    <dxo-form>
-      <dxi-item itemType="group" [colCount]="2">
-        <dxi-item dataField="name"></dxi-item>
-        <dxi-item dataField="description"></dxi-item>
-        <dxi-item dataField="date"></dxi-item>
-        <dxi-item dataField="status"></dxi-item>
-      </dxi-item>
-    </dxo-form>
   </dxo-editing>
-</dx-data-grid> 
+
+  <dxo-paging [pageSize]="10"></dxo-paging>
+  <dxo-pager
+    [showPageSizeSelector]="true"
+    [allowedPageSizes]="[10, 25, 50, 100]"
+    [showInfo]="true">
+  </dxo-pager>
+</dx-data-grid>
+
+<div *ngIf="loading" class="loading-overlay">
+  <mat-spinner></mat-spinner>
+</div> 

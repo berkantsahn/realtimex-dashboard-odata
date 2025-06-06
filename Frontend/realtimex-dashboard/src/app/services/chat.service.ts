@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
 import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr';
-import { BehaviorSubject, Observable, Subject } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, from } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { AuthService } from './auth.service';
 import { ChatMessage, MediaType } from '../models/chat-message.model';
 import { HttpClient, HttpEventType } from '@angular/common/http';
-import { map } from 'rxjs/operators';
+import { map, switchMap } from 'rxjs/operators';
 
 interface MessageReadEvent {
   messageId: number;
@@ -73,31 +73,32 @@ export class ChatService {
     }
   }
 
-  async sendMessage(receiverId: string, content: string, mediaFile?: File) {
-    try {
-      if (mediaFile) {
-        const formData = new FormData();
-        formData.append('file', mediaFile);
-        
-        // Upload media file
-        const response = await fetch(`${environment.apiUrl}/api/media/upload`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${this.authService.getToken()}`
-          },
-          body: formData
-        });
+  sendMessage(receiverId: string, content: string, mediaFile?: File): Observable<ChatMessage> {
+    if (mediaFile) {
+      const formData = new FormData();
+      formData.append('file', mediaFile);
+      formData.append('receiverId', receiverId);
+      formData.append('content', content);
+      
+      return this.http.post<ChatMessage>(`${environment.apiUrl}/api/chat/upload`, formData).pipe(
+        switchMap(message => from(this.hubConnection.invoke('SendMessage', receiverId, content, message.mediaUrl)).pipe(
+          map(() => message)
+        ))
+      );
+    } else {
+      const message: ChatMessage = {
+        id: 0, // Backend will assign the actual ID
+        receiverId,
+        content,
+        senderId: this.authService.getCurrentUserId(),
+        sentAt: new Date(),
+        isRead: false,
+        type: MediaType.Text
+      };
 
-        if (!response.ok) throw new Error('Media upload failed');
-        
-        const mediaData = await response.json();
-        await this.hubConnection.invoke('SendMessage', receiverId, content, mediaData);
-      } else {
-        await this.hubConnection.invoke('SendMessage', receiverId, content);
-      }
-    } catch (err) {
-      console.error('Error while sending message: ' + err);
-      throw err;
+      return from(this.hubConnection.invoke('SendMessage', receiverId, content)).pipe(
+        map(() => message)
+      );
     }
   }
 
@@ -113,10 +114,6 @@ export class ChatService {
     return this.http.get<ChatMessage[]>(`${environment.apiUrl}/api/chat/messages/${userId}/${otherUserId}`);
   }
 
-  sendMessage(message: ChatMessage): Observable<ChatMessage> {
-    return this.http.post<ChatMessage>(`${environment.apiUrl}/api/chat/messages`, message);
-  }
-
   uploadMedia(file: File, receiverId: number): Observable<ChatMessage> {
     const formData = new FormData();
     formData.append('file', file);
@@ -130,7 +127,7 @@ export class ChatService {
         if (event.type === HttpEventType.Response) {
           return event.body as ChatMessage;
         }
-        return null;
+        throw new Error('Upload failed');
       })
     );
   }

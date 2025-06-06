@@ -1,24 +1,45 @@
-import { Component } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Component, ViewEncapsulation } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthService } from '../../services/auth.service';
-import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
-  standalone: false
+  encapsulation: ViewEncapsulation.None,
+  host: {
+    'class': 'app-login',
+    '[style.display]': '"block"',
+    '[style.height]': '"100%"',
+    '[style.overflow]': '"hidden"'
+  },
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    MatIconModule,
+    MatProgressSpinnerModule
+  ]
 })
 export class LoginComponent {
   loginForm: FormGroup;
   loading = false;
+  hidePassword = true;
 
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private router: Router,
-    private snackBar: MatSnackBar
+    private router: Router
   ) {
     this.loginForm = this.fb.group({
       username: ['', [Validators.required]],
@@ -37,11 +58,10 @@ export class LoginComponent {
         },
         error: (error) => {
           this.loading = false;
-          this.snackBar.open(
-            error.error?.message || 'Login failed. Please try again.',
-            'Close',
-            { duration: 5000 }
-          );
+          console.error('Login failed:', error);
+        },
+        complete: () => {
+          this.loading = false;
         }
       });
     }

@@ -13,6 +13,19 @@ export class DataService {
 
   constructor(private http: HttpClient) { }
 
+  // Generic CRUD operations
+  create<T>(entity: string, data: T): Observable<T> {
+    return this.http.post<T>(`${this.baseUrl}/${entity}`, data);
+  }
+
+  update<T>(entity: string, id: number | string, data: Partial<T>): Observable<T> {
+    return this.http.patch<T>(`${this.baseUrl}/${entity}(${id})`, data);
+  }
+
+  delete(entity: string, id: number | string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/${entity}(${id})`);
+  }
+
   // RealTimeData OData endpoints
   getRealTimeData(options?: any): Observable<any> {
     let params = new HttpParams();
@@ -33,15 +46,15 @@ export class DataService {
   }
 
   createRealTimeData(data: RealTimeData): Observable<RealTimeData> {
-    return this.http.post<RealTimeData>(`${this.baseUrl}/RealTimeData`, data);
+    return this.create<RealTimeData>('RealTimeData', data);
   }
 
   updateRealTimeData(id: number, data: RealTimeData): Observable<RealTimeData> {
-    return this.http.put<RealTimeData>(`${this.baseUrl}/RealTimeData(${id})`, data);
+    return this.update<RealTimeData>('RealTimeData', id, data);
   }
 
   deleteRealTimeData(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrl}/RealTimeData(${id})`);
+    return this.delete('RealTimeData', id);
   }
 
   // Announcement OData endpoints
@@ -64,14 +77,14 @@ export class DataService {
   }
 
   createAnnouncement(announcement: Announcement): Observable<Announcement> {
-    return this.http.post<Announcement>(`${this.baseUrl}/Announcements`, announcement);
+    return this.create<Announcement>('Announcements', announcement);
   }
 
   updateAnnouncement(id: number, announcement: Announcement): Observable<Announcement> {
-    return this.http.put<Announcement>(`${this.baseUrl}/Announcements(${id})`, announcement);
+    return this.update<Announcement>('Announcements', id, announcement);
   }
 
   deleteAnnouncement(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrl}/Announcements(${id})`);
+    return this.delete('Announcements', id);
   }
 } 

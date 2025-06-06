@@ -1,78 +1,82 @@
-import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { HttpClientModule } from '@angular/common/http';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { ReactiveFormsModule } from '@angular/forms';
+import { HttpClientModule } from '@angular/common/http';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { RouterModule, Routes } from '@angular/router';
+import { CommonModule } from '@angular/common';
+
+import { DashboardComponent } from './components/dashboard/dashboard.component';
+import { DataGridComponent } from './components/data-grid/data-grid.component';
+
+// Material Imports
 import { MatCardModule } from '@angular/material/card';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatDividerModule } from '@angular/material/divider';
-import { MatListModule } from '@angular/material/list';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { NgChartsModule } from 'ng2-charts';
-import { DxDataGridModule, DxLoadPanelModule, DxPopupModule, DxFormModule } from 'devextreme-angular';
-import { CommonModule } from '@angular/common';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatMenuModule } from '@angular/material/menu';
 
-import { AppRoutingModule } from './app-routing.module';
-import { AppComponent } from './app.component';
-import { DashboardComponent } from './components/dashboard/dashboard.component';
-import { LoginComponent } from './components/login/login.component';
-import { DataGridComponent } from './components/data-grid/data-grid.component';
+// DevExtreme
+import { DxDataGridModule, DxLoadPanelModule, DxButtonModule, DxLoadIndicatorModule } from 'devextreme-angular';
+
+// Charts
+import { NgChartsModule } from 'ng2-charts';
+
+// Chat Module
 import { ChatModule } from './modules/chat.module';
 
-import { AuthService } from './services/auth.service';
-import { RealTimeService } from './services/real-time.service';
-import { AnnouncementService } from './services/announcement.service';
-import { NotificationService } from './services/notification.service';
-import { ChatService } from './services/chat.service';
-import { CryptoService } from './services/crypto.service';
-import { ODataService } from './services/odata.service';
+export const routes: Routes = [
+  { path: '', redirectTo: '/login', pathMatch: 'full' },
+  { path: 'login', loadComponent: () => import('./components/login/login.component').then(m => m.LoginComponent) },
+  { path: 'dashboard', component: DashboardComponent },
+  { path: 'data-grid', component: DataGridComponent }
+];
+
+const materialModules = [
+  MatCardModule,
+  MatSnackBarModule,
+  MatDialogModule,
+  MatButtonModule,
+  MatIconModule,
+  MatProgressBarModule,
+  MatFormFieldModule,
+  MatInputModule,
+  MatProgressSpinnerModule,
+  MatToolbarModule,
+  MatMenuModule
+];
+
+const devExtremeModules = [
+  DxDataGridModule,
+  DxLoadPanelModule,
+  DxButtonModule,
+  DxLoadIndicatorModule
+];
 
 @NgModule({
   declarations: [
-    AppComponent,
     DashboardComponent,
-    LoginComponent,
     DataGridComponent
   ],
   imports: [
-    CommonModule,
     BrowserModule,
-    AppRoutingModule,
-    HttpClientModule,
     BrowserAnimationsModule,
+    CommonModule,
+    HttpClientModule,
+    FormsModule,
     ReactiveFormsModule,
-    MatCardModule,
-    MatButtonModule,
-    MatIconModule,
-    MatSnackBarModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatProgressSpinnerModule,
-    MatDividerModule,
-    MatListModule,
-    MatTooltipModule,
+    RouterModule.forRoot(routes),
+    ...materialModules,
+    ...devExtremeModules,
     NgChartsModule,
-    DxDataGridModule,
-    DxLoadPanelModule,
-    DxPopupModule,
-    DxFormModule,
     ChatModule
   ],
-  providers: [
-    AuthService,
-    RealTimeService,
-    AnnouncementService,
-    NotificationService,
-    ChatService,
-    CryptoService,
-    ODataService
-  ],
-  schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  bootstrap: [AppComponent]
+  providers: []
 })
 export class AppModule { } 

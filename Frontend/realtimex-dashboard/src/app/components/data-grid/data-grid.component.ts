@@ -14,12 +14,11 @@ interface GridRow {
 @Component({
   selector: 'app-data-grid',
   templateUrl: './data-grid.component.html',
-  styleUrls: ['./data-grid.component.scss'],
-  standalone: false
+  styleUrls: ['./data-grid.component.scss']
 })
 export class DataGridComponent implements OnInit {
   dataSource: any;
-  refreshMode = 'reshape';
+  refreshMode: 'full' | 'reshape' | 'repaint' = 'reshape';
   loadingIndicator = true;
   loading = false;
 
@@ -186,47 +185,85 @@ export class DataGridComponent implements OnInit {
     }
   }
 
+  loadData(): void {
+    if (this.dataSource) {
+      this.loading = true;
+      this.dataSource.reload().finally(() => {
+        this.loading = false;
+      });
+    }
+  }
+
   onRowUpdating(e: { oldData: GridRow; newData: Partial<GridRow> }): void {
+    const id = e.oldData.id;
     try {
-      this.dataService.update(e.oldData.id, e.newData, {}).subscribe({
-        error: (error: Error) => this.showError('Update failed: ' + error.message)
+      this.dataService.updateRealTimeData(id, { ...e.oldData, ...e.newData } as RealTimeData).subscribe({
+        next: () => {
+          this.showSuccess('Record updated successfully');
+          this.loadData();
+        },
+        error: (error) => {
+          this.showError('Failed to update record');
+          console.error('Update error:', error);
+        }
       });
     } catch (error) {
-      if (error instanceof Error) {
-        this.showError('Update failed: ' + error.message);
-      }
+      this.showError('Failed to update record');
+      console.error('Update error:', error);
     }
   }
 
   onRowInserting(e: { data: GridRow }): void {
     try {
-      this.dataService.create(e.data, {}).subscribe({
-        error: (error: Error) => this.showError('Insert failed: ' + error.message)
+      this.dataService.createRealTimeData(e.data as RealTimeData).subscribe({
+        next: () => {
+          this.showSuccess('Record created successfully');
+          this.loadData();
+        },
+        error: (error) => {
+          this.showError('Failed to create record');
+          console.error('Insert error:', error);
+        }
       });
     } catch (error) {
-      if (error instanceof Error) {
-        this.showError('Insert failed: ' + error.message);
-      }
+      this.showError('Failed to create record');
+      console.error('Insert error:', error);
     }
   }
 
   onRowRemoving(e: { data: GridRow }): void {
     try {
-      this.dataService.delete(e.data.id, {}).subscribe({
-        error: (error: Error) => this.showError('Delete failed: ' + error.message)
+      this.dataService.deleteRealTimeData(e.data.id).subscribe({
+        next: () => {
+          this.showSuccess('Record deleted successfully');
+          this.loadData();
+        },
+        error: (error) => {
+          this.showError('Failed to delete record');
+          console.error('Delete error:', error);
+        }
       });
     } catch (error) {
-      if (error instanceof Error) {
-        this.showError('Delete failed: ' + error.message);
-      }
+      this.showError('Failed to delete record');
+      console.error('Delete error:', error);
     }
+  }
+
+  private showSuccess(message: string): void {
+    this.snackBar.open(message, 'Close', {
+      duration: 3000,
+      horizontalPosition: 'end',
+      verticalPosition: 'top',
+      panelClass: ['success-snackbar']
+    });
   }
 
   private showError(message: string): void {
     this.snackBar.open(message, 'Close', {
-      duration: 3000,
-      horizontalPosition: 'center',
-      verticalPosition: 'bottom'
+      duration: 5000,
+      horizontalPosition: 'end',
+      verticalPosition: 'top',
+      panelClass: ['error-snackbar']
     });
   }
 }
